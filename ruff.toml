@@ -1,0 +1,13 @@
+line-length = 120
+indent-width = 4
+
+[lint]
+select = [
+    "E",  # cats
+    "F",  # pycodestyles error
+    "W",  # pycodestyles warning
+    "N",  # pep8-naming
+    "Q",  # flake8-quotes
+    "COM",  # flake8-commas
+]
+ignore = []
