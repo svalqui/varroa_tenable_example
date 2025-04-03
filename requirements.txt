@@ -1,2 +1,2 @@
-varroaclient==1.2.0
+varroaclient==1.2.2
 pyTenable==1.6.0

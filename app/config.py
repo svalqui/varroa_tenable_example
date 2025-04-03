@@ -1,6 +1,10 @@
 # Define the CIDR ranges for the Auckland AZ in Nectar Cloud
 TARGET_CIDR = None
-
+# If needing multiple CIDR ranges use a list
+#TARGET_CIDR = [
+#    "yyy.yyy.yyy.yyy/yy",
+#    "zzz.zzz.zzz.zzz/zz",
+#    ]
 
 # Change me to desired security risk type
 SECURITY_RISK_TYPE_TARGET = "password-ssh"

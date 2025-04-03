@@ -53,33 +53,10 @@ def create_tenable_session() -> TenableIO:
     return tio
 
 
-def get_findings_based_on_cidr_and_vulns():
-    """
-    Return a list of IP addresses that have a vulnerability finding based on plugin ID.
-
-    This function queries the Tenable Cloud for all IP addresses in the specified CIDR
-    range that have a specific vulnerability finding (e.g., password authentication enabled
-    for SSH). Note that both the CIDR range and the plugin ID are specified in the config.py.
-    """
-    # Create Tenable session
-    tio = create_tenable_session()
-
-    # Convert target CIDR to IP network object
-    cidr_obj = ipaddress.ip_network(config.TARGET_CIDR)
-
-    # Plugin ID for password authentication enabled (info level )
+def process_results(results, tio, cidr_obj):
+    processed=[]
     security_risk_type = config.SECURITY_RISK_TYPE_TARGET
-    plugin_ids = config.SECURITY_RISK_TYPE_TENABLE_PLUGINS[security_risk_type]
 
-    # Using PyTenable, export all vulnerabilities that:
-    # - are of the specified plugin ID
-    # - are in the specified CIDR range
-    results = tio.exports.vulns(plugin_id=plugin_ids, cidr_range=config.TARGET_CIDR)
-
-    # Process findings summary:
-    # - Get only OPEN findings that have not been resolved
-    # - Get only findings when the IP is in the CIDR range (this is a double check)
-    findings = []
     for result in results:
         asset_uuid = result["asset"]["uuid"]
         port = result["port"]["port"]
@@ -121,6 +98,54 @@ def get_findings_based_on_cidr_and_vulns():
             "ip_address": ip_address,
             "risk_type": security_risk_type,
         }
-        findings.append(finding)
+        processed.append(finding)
+
+    return processed
+
+
+def get_findings_based_on_cidr_and_vulns():
+    """
+    Return a list of IP addresses that have a vulnerability finding based on plugin ID.
+
+    This function queries the Tenable Cloud for all IP addresses in the specified CIDR
+    range that have a specific vulnerability finding (e.g., password authentication enabled
+    for SSH). Note that both the CIDR range and the plugin ID are specified in the config.py.
+    """
+    # Create Tenable session
+    tio = create_tenable_session()
+
+    # Plugin ID for password authentication enabled (info level )
+    security_risk_type = config.SECURITY_RISK_TYPE_TARGET
+    plugin_ids = config.SECURITY_RISK_TYPE_TENABLE_PLUGINS[security_risk_type]
+
+    findings = []
+
+
+    if type(config.TARGET_CIDR) is list:
+        for CIDR in config.TARGET_CIDR:
+            # Convert target CIDR to IP network object
+            print("Checking CIDR :", CIDR)
+            cidr_obj = ipaddress.ip_network(CIDR)
+
+            results = tio.exports.vulns(plugin_id=plugin_ids,
+                                        cidr_range=CIDR)
+
+            findings += process_results(results, tio, cidr_obj)
+
+    else:
+
+        # Convert target CIDR to IP network object
+        cidr_obj = ipaddress.ip_network(config.TARGET_CIDR)
+
+        # Using PyTenable, export all vulnerabilities that:
+        # - are of the specified plugin ID
+        # - are in the specified CIDR range
+        results = tio.exports.vulns(plugin_id=plugin_ids, cidr_range=config.TARGET_CIDR)
+
+        # Process findings summary:
+        # - Get only OPEN findings that have not been resolved
+        # - Get only findings when the IP is in the CIDR range (this is a double check)
+
+        findings = process_results(results, tio, cidr_obj)
 
     return findings
