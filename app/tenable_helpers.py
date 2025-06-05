@@ -103,6 +103,67 @@ def process_results(results, tio, cidr_obj):
     return processed
 
 
+def process_critical(results, tio, cidr_obj):
+    processed=[]
+    security_risk_type = config.SECURITY_RISK_TYPE_TARGET
+
+    for result in results:
+        asset_uuid = result["asset"]["uuid"]
+        port = result["port"]["port"]
+        last_found = result["last_found"]
+        state = result["state"]
+
+#        # Skip any findings if the state is not "OPEN"
+#        # Open means the vulnerability still exists
+#        if state != "OPEN":
+#            continue
+
+        # Convert last_found to datetime object
+        last_found = datetime.strptime(last_found, "%Y-%m-%dT%H:%M:%S.%fZ")
+
+        # Get the asset in Tenable Cloud
+        # We need the asset to get a full list of IP addresses associated with the asset
+        # For example, when an instance has multiple interfaces
+        asset = tio.assets.details(asset_uuid)
+
+        # Loop through the interfaces to find the IP addresses
+        ip_address = None
+        for interface in asset["interfaces"]:
+            for ip in interface["ipv4"]:
+                # Check if the IP is in the CIDR range
+                if ipaddress.ip_address(ip) in cidr_obj:
+                    ip_address = ip
+                    break
+
+        # If the IP address is not in the CIDR range, skip this result
+        if ip_address is None:
+            continue
+
+        # Create a finding dictionary to return for each result
+        finding = {
+            "asset_uuid": asset_uuid,
+            "port": port,
+            "last_found": last_found,
+            "state": state,
+            "ip_address": ip_address,
+            "risk_type": security_risk_type,
+        }
+
+        print("===== Critical ===========")
+        print(finding["asset_uuid"],
+              finding["port"],
+              finding["last_found"],
+              finding["state"],
+              finding["ip_address"],
+              finding["risk_type"],
+              )
+
+        processed.append(finding)
+
+    return processed
+
+
+
 def get_findings_based_on_cidr_and_vulns():
     """
     Return a list of IP addresses that have a vulnerability finding based on plugin ID.
@@ -149,3 +210,49 @@ def get_findings_based_on_cidr_and_vulns():
         findings = process_results(results, tio, cidr_obj)
 
     return findings
+
+def get_findings_for_critical():
+    """
+    Return a list of vulnerability findings for all critical vulnerabilities.
+
+    This function queries the Tenable Cloud for all IP addresses in the specified CIDR
+    range that have a critical vulnerability.
+    Note that both the CIDR range and the plugin ID are specified in the config.py.
+    """
+    # Create Tenable session
+    tio = create_tenable_session()
+
+    findings = []
+
+    if type(config.TARGET_CIDR) is list:
+        for CIDR in config.TARGET_CIDR:
+            # Convert target CIDR to IP network object
+            print("Checking CIDR :", CIDR)
+            cidr_obj = ipaddress.ip_network(CIDR)
+
+            results = tio.exports.vulns(severity=["critical", ],
+                                        cidr_range=CIDR
+                                        )
+
+            findings += process_critical(results, tio, cidr_obj)
+
+    else:
+
+        # Convert target CIDR to IP network object
+        cidr_obj = ipaddress.ip_network(config.TARGET_CIDR)
+
+        # Using PyTenable, export all vulnerabilities that:
+        # - are of the specified plugin ID
+        # - are in the specified CIDR range
+        results = tio.exports.vulns(severity=["critical", ],
+                                    cidr_range=config.TARGET_CIDR
+                                    )
+
+        # Process findings summary:
+        # - Get only OPEN findings that have not been resolved
+        # - Get only findings when the IP is in the CIDR range (this is a double check)
+
+        findings = process_critical(results, tio, cidr_obj)
+
+    return findings
+
