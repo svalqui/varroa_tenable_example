@@ -22,7 +22,7 @@ def main():
     findings = tenable_helpers.get_findings_for_all_risk_type_plugins()
 
     for finding in findings:
-        print(f"[*] Processing: {finding['ip_address']}, {finding['risk_type']}, {finding['asset_uuid']}...")
+        print(f"[*] Processing: {finding['ip_address']}, {finding['risk_type']}...")
 
         # Skip any finding where the state is not OPEN
         if finding["state"] != "OPEN" or finding["state"] != "REOPEN":
