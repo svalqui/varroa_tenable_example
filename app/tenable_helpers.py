@@ -106,6 +106,8 @@ def process_results(results, tio, cidr_obj):
 def process_all(results, tio, cidr_obj, risk_type):
     processed=[]
 
+    print("  Processing risk type ", risk_type, " on CIDR ", cidr_obj.network_address )
+
     for result in results:
         asset_uuid = result["asset"]["uuid"]
         port = result["port"]["port"]
@@ -274,7 +276,6 @@ def get_findings_for_all_risk_type_plugins():
 
                     results = tio.exports.vulns(plugin_id=plugin_ids,
                                                 cidr_range=CIDR)
-                    print("    Found: ", len(results), " of risk type ", risk_type)
 
                     findings += process_all(results, tio, cidr_obj, risk_type)
 
@@ -291,8 +292,6 @@ def get_findings_for_all_risk_type_plugins():
                 # Process findings summary:
                 # - Get only OPEN findings that have not been resolved
                 # - Get only findings when the IP is in the CIDR range (this is a double check)
-
-                print("  Found: ", len(results), " of risk type ", risk_type)
 
                 findings = process_all(results, tio, cidr_obj, risk_type)
 
