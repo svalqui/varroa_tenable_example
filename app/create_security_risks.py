@@ -22,11 +22,11 @@ def main():
     findings = tenable_helpers.get_findings_for_all_risk_type_plugins()
 
     for finding in findings:
-        print(f"[*] Processing: {finding['ip_address']}...")
+        print(f"[*] Processing: {finding['ip_address']}, {finding['risk_type']}, {finding['asset_uuid']}...")
 
         # Skip any finding where the state is not OPEN
         if finding["state"] != "OPEN" or finding["state"] != "REOPEN":
-            print("    [!] Finding is not OPEN nor REOPEN... Skipping.")
+            print("    [!] Finding is not OPEN nor REOPEN... Skipping.", finding["state"])
             continue
 
         # Get the instance ID and project ID based on the IP address and date

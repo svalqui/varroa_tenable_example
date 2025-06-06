@@ -103,9 +103,8 @@ def process_results(results, tio, cidr_obj):
     return processed
 
 
-def process_critical(results, tio, cidr_obj):
+def process_all(results, tio, cidr_obj, risk_type):
     processed=[]
-    security_risk_type = config.SECURITY_RISK_TYPE_TARGET
 
     for result in results:
         asset_uuid = result["asset"]["uuid"]
@@ -113,10 +112,10 @@ def process_critical(results, tio, cidr_obj):
         last_found = result["last_found"]
         state = result["state"]
 
-#        # Skip any findings if the state is not "OPEN"
-#        # Open means the vulnerability still exists
-#        if state != "OPEN":
-#            continue
+        # Skip any findings if the state is not "OPEN"
+        # Open means the vulnerability still exists
+        if state != "OPEN":
+            continue
 
         # Convert last_found to datetime object
         last_found = datetime.strptime(last_found, "%Y-%m-%dT%H:%M:%S.%fZ")
@@ -146,22 +145,11 @@ def process_critical(results, tio, cidr_obj):
             "last_found": last_found,
             "state": state,
             "ip_address": ip_address,
-            "risk_type": security_risk_type,
+            "risk_type": risk_type,
         }
-
-        print("===== Critical ===========")
-        print(finding["asset_uuid"],
-              finding["port"],
-              finding["last_found"],
-              finding["state"],
-              finding["ip_address"],
-              finding["risk_type"],
-              )
-
         processed.append(finding)
 
     return processed
-
 
 
 def get_findings_based_on_cidr_and_vulns():
@@ -262,8 +250,9 @@ def get_findings_for_all_risk_type_plugins():
     Return a list of IP addresses that have a vulnerability finding based on plugin ID.
 
     This function queries the Tenable Cloud for all IP addresses in the specified CIDR
-    range that have a specific vulnerability finding (e.g., password authentication enabled
-    for SSH). Note that both the CIDR range and the plugin ID are specified in the config.py.
+    range that have vulnerability finding (e.g., password authentication enabled
+    for SSH) for all risk types. Note that both the CIDR range and the plugin ID are
+    specified in the config.py.
     """
     # Create Tenable session
     tio = create_tenable_session()
@@ -286,7 +275,7 @@ def get_findings_for_all_risk_type_plugins():
                     results = tio.exports.vulns(plugin_id=plugin_ids,
                                                 cidr_range=CIDR)
 
-                    findings += process_results(results, tio, cidr_obj)
+                    findings += process_all(results, tio, cidr_obj, risk_type)
 
             else:
 
@@ -302,7 +291,7 @@ def get_findings_for_all_risk_type_plugins():
                 # - Get only OPEN findings that have not been resolved
                 # - Get only findings when the IP is in the CIDR range (this is a double check)
 
-                findings = process_results(results, tio, cidr_obj)
+                findings = process_all(results, tio, cidr_obj, risk_type)
 
     return findings
 
