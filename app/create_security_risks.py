@@ -18,7 +18,7 @@ def main():
     # Get all vulnerability findings:
     print("[*] Fetching vulnerabilities from Tenable...")
 #    findings = tenable_helpers.get_findings_based_on_cidr_and_vulns()
-    findings = tenable_helpers.get_findings_for_all_risk_type_plugins()
+    findings = tenable_helpers.get_findings_for_all_risk_type_plugins()q
 
     for finding in findings:
         print(f"[*] Processing: {finding['ip_address']}...")

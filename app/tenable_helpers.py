@@ -273,12 +273,14 @@ def get_findings_for_all_risk_type_plugins():
     for risk_type in config.SECURITY_RISK_TYPE_TENABLE_PLUGINS.keys():
         plugin_ids = config.SECURITY_RISK_TYPE_TENABLE_PLUGINS[risk_type]
 
+        print("Checking Risk :", risk_type)
+
         if plugin_ids:
 
             if type(config.TARGET_CIDR) is list:
                 for CIDR in config.TARGET_CIDR:
                     # Convert target CIDR to IP network object
-                    print("Checking CIDR :", CIDR)
+                    print("  Checking CIDR :", CIDR)
                     cidr_obj = ipaddress.ip_network(CIDR)
 
                     results = tio.exports.vulns(plugin_id=plugin_ids,
