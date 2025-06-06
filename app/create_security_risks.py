@@ -43,7 +43,9 @@ def main():
         security_risk_exists = varroa_helpers.check_security_risk_exists(finding)
         if security_risk_exists:
             print("    [!] Security risk already exists... Skipping.")
-            my_log = "Security risk already exists... Skipping " + finding["ip_address"]
+            my_log = ("Security risk already exists... Skipping " +
+                      finding['risk_type'] + " " +
+                      finding["ip_address"])
             syslog.syslog(syslog.LOG_INFO, my_log)
             continue
         else:
@@ -53,7 +55,8 @@ def main():
         result = varroa_helpers.create_security_risk(finding)
         if result:
             print("    [*] Security risk created.")
-            my_log = "Security risk created for " + finding["ip_address"]
+            my_log = ("Security risk created " +
+                      finding['risk_type'] + " for " + finding["ip_address"])
             syslog.syslog(syslog.LOG_INFO, my_log)
 
         else:
