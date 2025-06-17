@@ -116,7 +116,7 @@ def process_all(results, tio, cidr_obj, risk_type):
 
         # Skip any findings if the state is not "OPEN"
         # Open means the vulnerability still exists
-        if state != "OPEN":
+        if state != "OPEN" or state != "REOPEN":
             continue
 
         # Convert last_found to datetime object
@@ -150,6 +150,7 @@ def process_all(results, tio, cidr_obj, risk_type):
             "risk_type": risk_type,
         }
         processed.append(finding)
+        print("        processing ", finding["ip_address"],finding["risk_type"],finding["state"], )
 
     return processed
 
@@ -278,6 +279,7 @@ def get_findings_for_all_risk_type_plugins():
                                                 cidr_range=CIDR)
 
                     findings += process_all(results, tio, cidr_obj, risk_type)
+                    print("    finding...", len(findings))
 
             else:
                 print("  Checking CIDR :", config.TARGET_CIDR)
@@ -294,6 +296,7 @@ def get_findings_for_all_risk_type_plugins():
                 # - Get only findings when the IP is in the CIDR range (this is a double check)
 
                 findings = process_all(results, tio, cidr_obj, risk_type)
+                print("    finding...", len(findings))
 
     return findings
 
