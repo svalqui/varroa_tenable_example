@@ -116,41 +116,40 @@ def process_all(results, tio, cidr_obj, risk_type):
 
         # Skip any findings if the state is not "OPEN"
         # Open means the vulnerability still exists
-        if state != "OPEN" or state != "REOPENED":
-            continue
-        print("        processing ", result["last_found"], result["state"] )
-        # Convert last_found to datetime object
-        last_found = datetime.strptime(last_found, "%Y-%m-%dT%H:%M:%S.%fZ")
+        if state == "OPEN" or state == "REOPENED":
+            print("        processing ", result["last_found"], result["state"] )
+            # Convert last_found to datetime object
+            last_found = datetime.strptime(last_found, "%Y-%m-%dT%H:%M:%S.%fZ")
 
-        # Get the asset in Tenable Cloud
-        # We need the asset to get a full list of IP addresses associated with the asset
-        # For example, when an instance has multiple interfaces
-        asset = tio.assets.details(asset_uuid)
+            # Get the asset in Tenable Cloud
+            # We need the asset to get a full list of IP addresses associated with the asset
+            # For example, when an instance has multiple interfaces
+            asset = tio.assets.details(asset_uuid)
 
-        # Loop through the interfaces to find the IP addresses
-        ip_address = None
-        for interface in asset["interfaces"]:
-            for ip in interface["ipv4"]:
-                # Check if the IP is in the CIDR range
-                if ipaddress.ip_address(ip) in cidr_obj:
-                    ip_address = ip
-                    break
+            # Loop through the interfaces to find the IP addresses
+            ip_address = None
+            for interface in asset["interfaces"]:
+                for ip in interface["ipv4"]:
+                    # Check if the IP is in the CIDR range
+                    if ipaddress.ip_address(ip) in cidr_obj:
+                        ip_address = ip
+                        break
 
-        # If the IP address is not in the CIDR range, skip this result
-        if ip_address is None:
-            continue
+            # If the IP address is not in the CIDR range, skip this result
+            if ip_address is None:
+                continue
 
-        # Create a finding dictionary to return for each result
-        finding = {
-            "asset_uuid": asset_uuid,
-            "port": port,
-            "last_found": last_found,
-            "state": state,
-            "ip_address": ip_address,
-            "risk_type": risk_type,
-        }
-        processed.append(finding)
-        print("        processing ", finding["ip_address"],finding["risk_type"],finding["state"], )
+            # Create a finding dictionary to return for each result
+            finding = {
+                "asset_uuid": asset_uuid,
+                "port": port,
+                "last_found": last_found,
+                "state": state,
+                "ip_address": ip_address,
+                "risk_type": risk_type,
+            }
+            processed.append(finding)
+            print("        processing ", finding["ip_address"],finding["risk_type"],finding["state"], )
 
     return processed
 
