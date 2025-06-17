@@ -16,6 +16,7 @@ SECURITY_RISK_TYPE_LOOKUP = {
     "password-ssh": "c59f20bd-cd38-4fd4-be8f-ae2ea88b0460",
     "accessible-db": "cb9feb63-88ba-4016-91ed-347e8806aed8",
     "accessible-rdp": "db27aeb2-6e0f-4aa3-8440-043f131bf979",
+    "eol-os": "8d41e7d3-7a1c-44df-a3f7-4e305a46557c"
 }
 
 
@@ -37,5 +38,10 @@ SECURITY_RISK_TYPE_TENABLE_PLUGINS = {
         5954,  # Windows RDP / Terminal Services Detection
         10940,  # Remote Desktop Protocol Service Detection
         27507,  # OS Identification : RDP
+    ],
+    "eol-os": [
+        201456,  # Canonical Ubuntu Linux SEoL (18.04.x)
+        201420,  # Debian Linux SEoL (8.x) 
+        201351,  # Canonical Ubuntu Linux SEoL (16.04.x)
     ],
 }
