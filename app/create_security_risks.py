@@ -29,38 +29,41 @@ def main():
             print("    [!] Finding is not OPEN nor REOPEN... Skipping.", finding["state"])
             continue
 
-        # Get the instance ID and project ID based on the IP address and date
-        lookup_result = varroa_helpers.get_instance_based_on_ip_history(finding["ip_address"], finding["last_found"])
-        if lookup_result[0] is None:
-            print("    [!] No instance found... Skipping.")
-            continue
-        else:
-            print("    [*] Found instance...")
-            finding["instance_id"] = lookup_result[0]
-            finding["project_id"] = lookup_result[1]
+        if finding["state"] == "OPEN" or finding["state"] == "REOPENED":
+            print("    [!] Finding is OPEN nor REOPEN... Processing.", finding["state"])
 
-        # Check if the security risk already exists
-        security_risk_exists = varroa_helpers.check_security_risk_exists(finding)
-        if security_risk_exists:
-            print("    [!] Security risk already exists... Skipping.")
-            my_log = ("Security risk already exists... Skipping " +
-                      finding['risk_type'] + " " +
-                      finding["ip_address"])
-            syslog.syslog(syslog.LOG_INFO, my_log)
-            continue
-        else:
-            print("    [*] Security risk does not exist...")
+            # Get the instance ID and project ID based on the IP address and date
+            lookup_result = varroa_helpers.get_instance_based_on_ip_history(finding["ip_address"], finding["last_found"])
+            if lookup_result[0] is None:
+                print("    [!] No instance found... Skipping.")
+                continue
+            else:
+                print("    [*] Found instance...")
+                finding["instance_id"] = lookup_result[0]
+                finding["project_id"] = lookup_result[1]
 
-        # Create the security risk
-        result = varroa_helpers.create_security_risk(finding)
-        if result:
-            print("    [*] Security risk created.")
-            my_log = ("Security risk created " +
-                      finding['risk_type'] + " for " + finding["ip_address"])
-            syslog.syslog(syslog.LOG_INFO, my_log)
+            # Check if the security risk already exists
+            security_risk_exists = varroa_helpers.check_security_risk_exists(finding)
+            if security_risk_exists:
+                print("    [!] Security risk already exists... Skipping.")
+                my_log = ("Security risk already exists... Skipping " +
+                          finding['risk_type'] + " " +
+                          finding["ip_address"])
+                syslog.syslog(syslog.LOG_INFO, my_log)
+                continue
+            else:
+                print("    [*] Security risk does not exist...")
 
-        else:
-            print("    [!] Failed to create security risk.")
+            # Create the security risk
+            result = varroa_helpers.create_security_risk(finding)
+            if result:
+                print("    [*] Security risk created.")
+                my_log = ("Security risk created " +
+                          finding['risk_type'] + " for " + finding["ip_address"])
+                syslog.syslog(syslog.LOG_INFO, my_log)
+
+            else:
+                print("    [!] Failed to create security risk.")
 
 
 if __name__ == "__main__":
