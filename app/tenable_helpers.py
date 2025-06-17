@@ -116,9 +116,9 @@ def process_all(results, tio, cidr_obj, risk_type):
 
         # Skip any findings if the state is not "OPEN"
         # Open means the vulnerability still exists
-        if state != "OPEN" or state != "REOPEN":
+        if state != "OPEN" or state != "REOPENED":
             continue
-
+        print("        processing ", result["last_found"], result["state"] )
         # Convert last_found to datetime object
         last_found = datetime.strptime(last_found, "%Y-%m-%dT%H:%M:%S.%fZ")
 
@@ -272,7 +272,7 @@ def get_findings_for_all_risk_type_plugins():
             if type(config.TARGET_CIDR) is list:
                 for CIDR in config.TARGET_CIDR:
                     # Convert target CIDR to IP network object
-                    print("  Checking CIDR :", CIDR)
+                    print("  Checking CIDR :", CIDR, " plugins ", plugin_ids)
                     cidr_obj = ipaddress.ip_network(CIDR)
 
                     results = tio.exports.vulns(plugin_id=plugin_ids,

@@ -25,7 +25,7 @@ def main():
         print(f"[*] Processing: {finding['ip_address']}, {finding['risk_type']}...")
 
         # Skip any finding where the state is not OPEN
-        if finding["state"] != "OPEN" or finding["state"] != "REOPEN":
+        if finding["state"] != "OPEN" or finding["state"] != "REOPENED":
             print("    [!] Finding is not OPEN nor REOPEN... Skipping.", finding["state"])
             continue
 
